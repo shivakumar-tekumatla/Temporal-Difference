@@ -8,6 +8,7 @@ Stepping into this region incurs a reward of -100 and sends the agent instantly 
 import numpy as np 
 
 from itertools import product
+import matplotlib.pyplot as plt
 class Env:
     def __init__(self,environment,start,goal) -> None:
         self.environment = environment # 
@@ -32,7 +33,7 @@ class Env:
         return False 
 
     def next_state(self,state,action):
-        print(state,action)
+        # print(state,action)
         return self.tuple_sum(state,action)
 
     def reward(self,next_state):
@@ -49,23 +50,19 @@ class Env:
         return  self.state 
 
 class TemporalDifference:
-    def __init__(self,env,alpha,gamma,epsilon) -> None:
+    def __init__(self,env,alpha,gamma,epsilon,eps_decay_factor =0.1) -> None:
         self.env = env  # environment 
         self.gamma = gamma #discount factor 
         self.alpha = alpha  #step size 
         self.epsilon = epsilon
+        self.eps_decay_factor = eps_decay_factor # decay the epsilon after each episode by some factor 
         pass
     def initialize(self):
         Q = {}
         for state in self.env.states:
-            # Q[state] =
-            # print(self.env.states)
-            # print(self.env.environment[state])
             state = tuple(state)
-            # if self.env.environment[state]!=1: #checking is that action can be taken because of the boundaries 
+            #checking is that action can be taken because of the boundaries 
             Q[state] = {action:0 for action in self.env.actions if self.env.tuple_sum(state,action) in map(tuple,self.env.states) }
-            # else: # if it is a cliff , then there is no action , just bounce back and reset 
-            #     Q[state] = {} 
         return Q 
     
     def epsilon_greedy(self,Q,S):
@@ -77,7 +74,7 @@ class TemporalDifference:
             A = max(Q[S], key=Q[S].get, default=None)
         return A 
     
-    def SARSA(self,n_episodes):
+    def SARSA(self,n_episodes,eps_greedy_decay=True):
 
         Q = self.initialize() # initialize Q(s,a) for all s and a except for the terminal states 
         # print(Q)
@@ -100,9 +97,12 @@ class TemporalDifference:
 
                 if self.env.is_terminal(S):
                     break 
+            if eps_greedy_decay:
+                # decay the epsilon after each episode 
+                self.epsilon = self.epsilon*self.eps_decay_factor
         return Q 
     
-    def QLearning(self,n_episodes):
+    def QLearning(self,n_episodes,eps_greedy_decay=True):
         # only one step changes compared to SARSA 
         Q = self.initialize() # initialize Q(s,a) for all s and a except for the terminal states 
 
@@ -124,7 +124,38 @@ class TemporalDifference:
                 S = S_
                 if self.env.is_terminal(S):
                     break 
+            if eps_greedy_decay:
+                # decay the epsilon after each episode 
+                self.epsilon = self.epsilon*self.eps_decay_factor
         return Q
+    def plot_path(self,Q,start,goal,title):
+        plt.title(title)
+        path = self.trace(Q,start,goal)
+        plt.imshow(1-self.env.environment,cmap="gray")
+        gy,gx = goal 
+        sy,sx = start
+        plt.plot(sx,sy,"ro")
+        plt.plot(gx,gy,"go")
+        for i in range(0,len(path)-1,2):
+            S,A = path[i],path[i+1]
+            y,x = S
+            dy,dx = self.env.actions[A]
+            mul = 0.5
+            plt.arrow(x,y,mul*dx,mul*dy,width=0.05)
+
+        plt.show()
+        return None
+    def trace(self,Q,start,goal):
+        # tracing the actions with max value 
+        path = [] 
+        S = start 
+        while S != goal: 
+            path.append(S)
+            A = max(Q[S], key=Q[S].get, default=None)
+            path.append(A)
+            S = self.env.next_state(S,A)
+        return path 
+
 
 def main():
     # actions = [""]
@@ -133,20 +164,22 @@ def main():
     goal = (3,11)
     alpha = 0.1
     gamma = 0.9
-    epsilon = 0.1 
+    epsilon = 0.3 
     n_episodes = 1000
 
     env = Env(environment,start,goal)
 
     TD = TemporalDifference(env,alpha,gamma,epsilon)
-    # Q = TD.SARSA(n_episodes)
-    Q = TD.QLearning(n_episodes)
-    print(Q)
-    # for state in env.states:
-    #     print(state)
+    Q = TD.SARSA(n_episodes,eps_greedy_decay=False)
+    TD.plot(Q,start,goal,"SARSA Without Epsilon Decay")
 
-    #     print(env.is_terminal(tuple(state)))
-    # print(env.next_state(goal,"u"))
+    Q = TD.QLearning(n_episodes,eps_greedy_decay=False)
+    TD.plot(Q,start,goal,"Q Learning Without Epsilon Decay")
+    Q = TD.SARSA(n_episodes)
+    TD.plot(Q,start,goal,"SARSA With Epsilon Decay")
+
+    Q = TD.QLearning(n_episodes)
+    TD.plot(Q,start,goal,"Q Learning With Epsilon Decay")
 
     return 
 
