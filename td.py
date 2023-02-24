@@ -32,6 +32,7 @@ class Env:
         return False 
 
     def next_state(self,state,action):
+        print(state,action)
         return self.tuple_sum(state,action)
 
     def reward(self,next_state):
@@ -45,26 +46,107 @@ class Env:
     def reset(self):
         #Whenever the robot transitioned to terminal state , reset the position to start position 
         self.state = self.start
-        return  self.self.state 
+        return  self.state 
 
-class TD:
-    def __init__(self,env,alpha,gamma) -> None:
-        self.env = env 
-        self.gamma = gamma 
-        self.alpha = alpha 
+class TemporalDifference:
+    def __init__(self,env,alpha,gamma,epsilon) -> None:
+        self.env = env  # environment 
+        self.gamma = gamma #discount factor 
+        self.alpha = alpha  #step size 
+        self.epsilon = epsilon
         pass
     def initialize(self):
-        return
+        Q = {}
+        for state in self.env.states:
+            # Q[state] =
+            # print(self.env.states)
+            # print(self.env.environment[state])
+            state = tuple(state)
+            # if self.env.environment[state]!=1: #checking is that action can be taken because of the boundaries 
+            Q[state] = {action:0 for action in self.env.actions if self.env.tuple_sum(state,action) in map(tuple,self.env.states) }
+            # else: # if it is a cliff , then there is no action , just bounce back and reset 
+            #     Q[state] = {} 
+        return Q 
+    
+    def epsilon_greedy(self,Q,S):
+        if np.random.random()<=self.epsilon: 
+                # Explore 
+                A = np.random.choice(list(Q[S]))
+        else:
+            #Exploit
+            A = max(Q[S], key=Q[S].get, default=None)
+        return A 
+    
+    def SARSA(self,n_episodes):
+
+        Q = self.initialize() # initialize Q(s,a) for all s and a except for the terminal states 
+        # print(Q)
+        for i in range(n_episodes): # loop for each episode
+            S = self.env.reset() # Initialize state. this is basically start state 
+            # print(S)
+            # loop for each step of the episode until S is terminal 
+            while True:
+                # choose A from S using epsilon-greedy 
+                A = self.epsilon_greedy(Q,S)
+                # print(S,A)
+                # take action A , observe R and S' 
+                S_ = self.env.next_state(S,A)
+                R = self.env.reward(S_)
+                # Choose A' from S' using policy derived from Q - epsilon greedy 
+                A_ = self.epsilon_greedy(Q,S_)
+                Q[S][A] = Q[S][A] + self.alpha*(R+self.gamma*Q[S_][A_]-Q[S][A])
+                S = S_
+                A = A_ 
+
+                if self.env.is_terminal(S):
+                    break 
+        return Q 
+    
+    def QLearning(self,n_episodes):
+        # only one step changes compared to SARSA 
+        Q = self.initialize() # initialize Q(s,a) for all s and a except for the terminal states 
+
+        for i in range(n_episodes): # loop for each episode
+            S = self.env.reset() # Initialize state. this is basically start state 
+            # print(S)
+            # loop for each step of the episode until S is terminal 
+            while True:
+                # choose A from S using epsilon-greedy 
+                A = self.epsilon_greedy(Q,S)
+                # print(S,A)
+                # take action A , observe R and S' 
+                S_ = self.env.next_state(S,A)
+                R = self.env.reward(S_)
+
+                # print(max(Q[S_]))
+                
+                Q[S][A] = Q[S][A] + self.alpha*(R+self.gamma*max(Q[S_].values())-Q[S][A])
+                S = S_
+                if self.env.is_terminal(S):
+                    break 
+        return Q
 
 def main():
     # actions = [""]
     environment = np.loadtxt("cliff.txt")
     start = (3,0)
     goal = (3,11)
+    alpha = 0.1
+    gamma = 0.9
+    epsilon = 0.1 
+    n_episodes = 1000
 
     env = Env(environment,start,goal)
 
-    print(env.next_state(goal,"u"))
+    TD = TemporalDifference(env,alpha,gamma,epsilon)
+    # Q = TD.SARSA(n_episodes)
+    Q = TD.QLearning(n_episodes)
+    print(Q)
+    # for state in env.states:
+    #     print(state)
+
+    #     print(env.is_terminal(tuple(state)))
+    # print(env.next_state(goal,"u"))
 
     return 
 
