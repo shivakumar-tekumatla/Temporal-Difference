@@ -24,3 +24,6 @@ When there is no decay of epsilon in epsilon-greedy , SARSA converges to a longe
 <img src="https://github.com/shivakumar-tekumatla/Temporal-Difference/blob/main/Outputs/QL_no_decay.png" width="500">
 
 But if the epsilon is gradually reduced after each episode, even the SARSA converges to the optimal path. 
+
+<img src="https://github.com/shivakumar-tekumatla/Temporal-Difference/blob/main/Outputs/SARSA_decay.png" width="500">
+<img src="https://github.com/shivakumar-tekumatla/Temporal-Difference/blob/main/Outputs/QL_decay.png" width="500">
