@@ -169,8 +169,8 @@ def main():
     start = (3,0)
     goal = (3,11)
     alpha = 0.2
-    gamma = 1#0.9
-    epsilon = 0.1
+    gamma = 0.9
+    epsilon = 0.01
     n_episodes = 1000
     episodes = [i for i in range(n_episodes)]
 
@@ -191,8 +191,10 @@ def main():
     TD.plot_path(Q,start,goal,"Q Learning With Epsilon Decay")
     plt.plot(episodes,rewards1)
     plt.plot(episodes,rewards2)
-    plt.plot(episodes,rewards3)
-    plt.plot(episodes,rewards4)
+    # plt.plot(episodes,rewards3)
+    # plt.plot(episodes,rewards4)
+    plt.xlabel("Episodes")
+    plt.ylabel("Sum of rewards during episode")
     plt.legend(["SARSA","Q Learning","S2","Q2"])
     plt.show()
     
