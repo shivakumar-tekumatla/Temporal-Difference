@@ -50,7 +50,7 @@ class Env:
         return  self.state 
 
 class TemporalDifference:
-    def __init__(self,env,alpha,gamma,epsilon,eps_decay_factor =0.1) -> None:
+    def __init__(self,env,alpha,gamma,epsilon,eps_decay_factor =0.01) -> None:
         self.env = env  # environment 
         self.gamma = gamma #discount factor 
         self.alpha = alpha  #step size 
@@ -77,11 +77,11 @@ class TemporalDifference:
     def SARSA(self,n_episodes,eps_greedy_decay=True):
 
         Q = self.initialize() # initialize Q(s,a) for all s and a except for the terminal states 
-        # print(Q)
+        rewards = []
         for i in range(n_episodes): # loop for each episode
             S = self.env.reset() # Initialize state. this is basically start state 
-            # print(S)
             # loop for each step of the episode until S is terminal 
+            total_R = 0
             while True:
                 # choose A from S using epsilon-greedy 
                 A = self.epsilon_greedy(Q,S)
@@ -89,6 +89,7 @@ class TemporalDifference:
                 # take action A , observe R and S' 
                 S_ = self.env.next_state(S,A)
                 R = self.env.reward(S_)
+                total_R +=R
                 # Choose A' from S' using policy derived from Q - epsilon greedy 
                 A_ = self.epsilon_greedy(Q,S_)
                 Q[S][A] = Q[S][A] + self.alpha*(R+self.gamma*Q[S_][A_]-Q[S][A])
@@ -100,14 +101,16 @@ class TemporalDifference:
             if eps_greedy_decay:
                 # decay the epsilon after each episode 
                 self.epsilon = self.epsilon*self.eps_decay_factor
-        return Q 
+            rewards.append(total_R)
+        return Q,rewards
     
     def QLearning(self,n_episodes,eps_greedy_decay=True):
         # only one step changes compared to SARSA 
         Q = self.initialize() # initialize Q(s,a) for all s and a except for the terminal states 
-
+        rewards = []
         for i in range(n_episodes): # loop for each episode
             S = self.env.reset() # Initialize state. this is basically start state 
+            total_R = 0
             # print(S)
             # loop for each step of the episode until S is terminal 
             while True:
@@ -117,7 +120,7 @@ class TemporalDifference:
                 # take action A , observe R and S' 
                 S_ = self.env.next_state(S,A)
                 R = self.env.reward(S_)
-
+                total_R +=R
                 # print(max(Q[S_]))
                 
                 Q[S][A] = Q[S][A] + self.alpha*(R+self.gamma*max(Q[S_].values())-Q[S][A])
@@ -127,7 +130,8 @@ class TemporalDifference:
             if eps_greedy_decay:
                 # decay the epsilon after each episode 
                 self.epsilon = self.epsilon*self.eps_decay_factor
-        return Q
+            rewards.append(total_R)
+        return Q,rewards
     def plot_path(self,Q,start,goal,title):
         plt.title(title)
         path = self.trace(Q,start,goal)
@@ -162,25 +166,34 @@ def main():
     environment = np.loadtxt("cliff.txt")
     start = (3,0)
     goal = (3,11)
-    alpha = 0.1
+    alpha = 0.2
     gamma = 0.9
-    epsilon = 0.3 
+    epsilon = 0.1
     n_episodes = 1000
+    episodes = [i for i in range(n_episodes)]
 
     env = Env(environment,start,goal)
 
     TD = TemporalDifference(env,alpha,gamma,epsilon)
-    Q = TD.SARSA(n_episodes,eps_greedy_decay=False)
-    TD.plot(Q,start,goal,"SARSA Without Epsilon Decay")
+    Q,rewards1 = TD.SARSA(n_episodes,eps_greedy_decay=False)
+    TD.plot_path(Q,start,goal,"SARSA Without Epsilon Decay")
 
-    Q = TD.QLearning(n_episodes,eps_greedy_decay=False)
-    TD.plot(Q,start,goal,"Q Learning Without Epsilon Decay")
-    Q = TD.SARSA(n_episodes)
-    TD.plot(Q,start,goal,"SARSA With Epsilon Decay")
-
-    Q = TD.QLearning(n_episodes)
-    TD.plot(Q,start,goal,"Q Learning With Epsilon Decay")
-
+    Q,rewards2 = TD.QLearning(n_episodes,eps_greedy_decay=False)
+    TD.plot_path(Q,start,goal,"Q Learning Without Epsilon Decay")
+    # plt.plot(episodes,rewards1)
+    # plt.legend(["SARSA","Q Learning"])
+    # plt.show()
+    Q,rewards3= TD.SARSA(n_episodes)
+    TD.plot_path(Q,start,goal,"SARSA With Epsilon Decay")
+    Q,rewards4 = TD.QLearning(n_episodes)
+    TD.plot_path(Q,start,goal,"Q Learning With Epsilon Decay")
+    plt.plot(episodes,rewards1)
+    plt.plot(episodes,rewards2)
+    plt.plot(episodes,rewards3)
+    plt.plot(episodes,rewards4)
+    plt.legend(["SARSA","Q Learning","S2","Q2"])
+    plt.show()
+    
     return 
 
 if __name__ == "__main__":
