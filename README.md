@@ -5,8 +5,22 @@ This gridworld example compares Sarsa and Q-learning, highlighting the differenc
 
 <img src="https://github.com/shivakumar-tekumatla/Temporal-Difference/blob/main/Outputs/world.png" width="500">
 
+The following hyper prameters are used:
 
-When there is no decay of epsilon in epsilon-greedy , SARSA converges to a longer safer path , where as the Q-learning converges to a optimal path. This is given by the following images. 
+```
+    start = (3,0)
+    goal = (3,11)
+    alpha = 0.2
+    gamma = 0.9
+    epsilon = 0.1
+    epsilon decay factor = 0.01
+    n_episodes = 1000
+```
+
+
+When there is no decay of epsilon in epsilon-greedy , SARSA converges to a longer safer path , where as the Q-learning converges to an optimal path. This is given by the following images. 
 
 <img src="https://github.com/shivakumar-tekumatla/Temporal-Difference/blob/main/Outputs/SARSA_no_decay.png" width="500">
 <img src="https://github.com/shivakumar-tekumatla/Temporal-Difference/blob/main/Outputs/QL_no_decay.png" width="500">
+
+But if the epsilon is gradually reduced after each episode, even the SARSA converges to the optimal path. 
