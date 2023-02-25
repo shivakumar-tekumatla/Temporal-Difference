@@ -138,8 +138,10 @@ class TemporalDifference:
         plt.imshow(1-self.env.environment,cmap="gray")
         gy,gx = goal 
         sy,sx = start
-        plt.plot(sx,sy,"ro")
-        plt.plot(gx,gy,"go")
+        plt.plot(sx,sy,"ro")#,label="Start")
+        plt.plot(gx,gy,"go")#,label="Goal")
+        # plt.annotate("start",(sx-0.25,sy-0.5))
+        # plt.annotate("goal",(gx,gy-0.5))
         for i in range(0,len(path)-1,2):
             S,A = path[i],path[i+1]
             y,x = S
@@ -167,7 +169,7 @@ def main():
     start = (3,0)
     goal = (3,11)
     alpha = 0.2
-    gamma = 0.9
+    gamma = 1#0.9
     epsilon = 0.1
     n_episodes = 1000
     episodes = [i for i in range(n_episodes)]
