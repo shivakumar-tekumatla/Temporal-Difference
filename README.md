@@ -10,9 +10,9 @@ The following hyper prameters are used:
 ```
     start = (3,0)
     goal = (3,11)
-    alpha = 0.2
-    gamma = 0.9
-    epsilon = 0.1
+    alpha (step size) = 0.2 
+    gamma (discount factor) = 0.9
+    epsilon (for epsilon-greedy)= 0.1
     epsilon decay factor = 0.01
     n_episodes = 1000
 ```
