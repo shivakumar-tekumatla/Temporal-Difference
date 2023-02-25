@@ -27,9 +27,12 @@ In Q-learning the exploring policy is epsilon-greedy , but the learning policy i
 
 The following is the plot of sum of rewards as function of episodes. In this , we can observe that the Q_learning receives more -100 rewards because it is occasionally trying the more riskier path thus obtaining the optimal path! That is why Q-learning has lower average reward compared to the SARSA!
 
-<img src="https://github.com/shivakumar-tekumatla/Temporal-Difference/blob/main/Outputs/episodes_r_no_decay.png" width="500">
+<img src="https://github.com/shivakumar-tekumatla/Temporal-Difference/blob/main/Outputs/n_r_no_decay.png" width="500">
 
 But if the epsilon is gradually reduced after each episode, even the SARSA converges to the optimal path. This is happening because over the episodes since the epsilon is reduced , SARSA is acting as Q-learning ! That means when epsilon is reduced, the learning becomes greedy, because of the low epsilon value! 
 
 <img src="https://github.com/shivakumar-tekumatla/Temporal-Difference/blob/main/Outputs/SARSA_decay.png" width="500">
 <img src="https://github.com/shivakumar-tekumatla/Temporal-Difference/blob/main/Outputs/QL_decay.png" width="500">
+
+This can be clearly observed from the episodes vs cumulative rewards graph. In this the sum of rewards from both methods are same because they are acting as same at lower epsilon values!
+<img src="https://github.com/shivakumar-tekumatla/Temporal-Difference/blob/main/Outputs/n_r_decay.png" width="500">
